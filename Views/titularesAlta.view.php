@@ -1,4 +1,4 @@
-<?php 
+<?php
 $page_title = "Razón Social - Alta";
 $current_page = "razon_social";
 ?>
@@ -15,10 +15,10 @@ $current_page = "razon_social";
             <img src="https://via.placeholder.com/40" class="rounded-circle" alt="User">
         </div>
     </header>
-    
+
     <div class="dashboard-content">
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h4><i class="bi bi-building me-2"></i>Gestión de Razones Sociales</h4>
+            <h4><i class="bi bi-building me-2"></i><?= isset($modo) && $modo === 'editar' ? 'Editar Razón Social' : 'Gestión de Razones Sociales' ?></h4>
             <div>
                 <button class="btn btn-sm btn-outline-secondary me-2">
                     <i class="bi bi-download"></i> Exportar
@@ -33,47 +33,64 @@ $current_page = "razon_social";
         </div>
 
         <!-- Alertas -->
-        <div id="alertContainer"></div>
+        <div id="alertContainer">
+            <?php if (!empty($error)): ?>
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="bi bi-exclamation-triangle me-2"></i><?= $error ?>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            <?php endif; ?>
+
+            <?php if (!empty($success)): ?>
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="bi bi-check-circle me-2"></i><?= $success ?>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            <?php endif; ?>
+        </div>
 
         <!-- Formulario de Razón Social -->
         <div class="card">
             <div class="card-header bg-white">
-                <h5 class="card-title mb-0">Alta de Razón Social</h5>
+                <h5 class="card-title mb-0"><?= isset($modo) && $modo === 'editar' ? 'Editar Razón Social' : 'Alta de Razón Social' ?></h5>
             </div>
             <div class="card-body">
-                <form id="razonSocialForm" novalidate>
+                <form id="razonSocialForm" method="POST" action="<?= isset($modo) && $modo === 'editar' ? 'editarTitular.php?id=' . $titular['id'] : '' ?>" novalidate>
+                    <?php if (isset($modo) && $modo === 'editar'): ?>
+                        <input type="hidden" name="id" value="<?= $titular['id'] ?>">
+                    <?php endif; ?>
                     <!-- Datos Básicos -->
                     <div class="row mb-4">
                         <div class="col-12">
                             <h6 class="border-bottom pb-2 mb-3">Datos Básicos</h6>
                         </div>
-                        
+
                         <div class="col-md-6 mb-3">
                             <label for="tipoPersona" class="form-label">Tipo de Persona <span class="text-danger">*</span></label>
-                            <select class="form-select" id="tipoPersona" required>
+                            <select class="form-select" id="tipoPersona" name="tipo" required>
                                 <option value="">Seleccionar tipo</option>
-                                <option value="fisica">Persona Física</option>
-                                <option value="juridica">Persona Jurídica</option>
+                                <option value="fisica" <?= isset($datos_formulario['tipo']) && $datos_formulario['tipo'] === 'fisica' ? 'selected' : '' ?>>Persona Física</option>
+                                <option value="juridica" <?= isset($datos_formulario['tipo']) && $datos_formulario['tipo'] === 'juridica' ? 'selected' : '' ?>>Persona Jurídica</option>
                             </select>
                             <div class="invalid-feedback">Por favor selecciona el tipo de persona.</div>
                         </div>
-                        
+
                         <div class="col-md-6 mb-3">
                             <label for="razonSocial" class="form-label">Razón Social / Nombre <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" id="razonSocial" placeholder="Ej: Empresa S.A. o Juan Pérez" required>
+                            <input type="text" class="form-control" id="razonSocial" name="nombre" value="<?= $datos_formulario['nombre'] ?? '' ?>" placeholder="Ej: Empresa S.A. o Juan Pérez" required>
                             <div class="invalid-feedback">Por favor ingresa la razón social o nombre.</div>
                         </div>
-                        
+
                         <div class="col-md-6 mb-3">
                             <label for="cuitCuil" class="form-label">CUIT/CUIL <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" id="cuitCuil" placeholder="XX-XXXXXXXX-X" maxlength="13" required>
+                            <input type="text" class="form-control" id="cuitCuil" name="cuit" value="<?= $datos_formulario['cuit'] ?? '' ?>" placeholder="XX-XXXXXXXX-X" maxlength="13" required>
                             <div class="invalid-feedback">Por favor ingresa un CUIT/CUIL válido.</div>
                             <div class="form-text">Formato: XX-XXXXXXXX-X</div>
                         </div>
-                        
+
                         <div class="col-md-6 mb-3">
                             <label for="fechaInicioActividades" class="form-label">Fecha Inicio de Actividades</label>
-                            <input type="date" class="form-control" id="fechaInicioActividades">
+                            <input type="date" class="form-control" id="fechaInicioActividades" name="fecha_inicio" value="<?= $datos_formulario['fecha_inicio'] ?? '' ?>">
                         </div>
                     </div>
 
@@ -82,27 +99,27 @@ $current_page = "razon_social";
                         <div class="col-12">
                             <h6 class="border-bottom pb-2 mb-3">Datos de Contacto</h6>
                         </div>
-                        
+
                         <div class="col-md-6 mb-3">
                             <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
-                            <input type="email" class="form-control" id="email" placeholder="contacto@empresa.com" required>
+                            <input type="email" class="form-control" id="email" name="email" value="<?= $datos_formulario['email'] ?? '' ?>" placeholder="contacto@empresa.com" required>
                             <div class="invalid-feedback">Por favor ingresa un email válido.</div>
                         </div>
-                        
+
                         <div class="col-md-6 mb-3">
                             <label for="telefono" class="form-label">Teléfono <span class="text-danger">*</span></label>
-                            <input type="tel" class="form-control" id="telefono" placeholder="+54 11 1234-5678" required>
+                            <input type="tel" class="form-control" id="telefono" name="telefono" value="<?= $datos_formulario['telefono'] ?? '' ?>" placeholder="+54 11 1234-5678" required>
                             <div class="invalid-feedback">Por favor ingresa un teléfono válido.</div>
                         </div>
-                        
+
                         <div class="col-md-6 mb-3">
                             <label for="celular" class="form-label">Celular</label>
-                            <input type="tel" class="form-control" id="celular" placeholder="+54 9 11 1234-5678">
+                            <input type="tel" class="form-control" id="celular" name="celular" value="<?= $datos_formulario['celular'] ?? '' ?>" placeholder="+54 9 11 1234-5678">
                         </div>
-                        
+
                         <div class="col-md-6 mb-3">
                             <label for="paginaWeb" class="form-label">Página Web</label>
-                            <input type="url" class="form-control" id="paginaWeb" placeholder="https://www.empresa.com">
+                            <input type="url" class="form-control" id="paginaWeb" name="web" value="<?= $datos_formulario['web'] ?? '' ?>" placeholder="https://www.empresa.com">
                         </div>
                     </div>
 
@@ -111,33 +128,33 @@ $current_page = "razon_social";
                         <div class="col-12">
                             <h6 class="border-bottom pb-2 mb-3">Dirección</h6>
                         </div>
-                        
+
                         <div class="col-md-6 mb-3">
                             <label for="calle" class="form-label">Calle <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" id="calle" placeholder="Av. Corrientes" required>
+                            <input type="text" class="form-control" id="calle" name="calle" value="<?= $datos_formulario['calle'] ?? '' ?>" placeholder="Av. Corrientes" required>
                             <div class="invalid-feedback">Por favor ingresa la calle.</div>
                         </div>
-                        
+
                         <div class="col-md-3 mb-3">
                             <label for="numero" class="form-label">Número <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" id="numero" placeholder="1234" required>
+                            <input type="text" class="form-control" id="numero" name="numero" value="<?= $datos_formulario['numero'] ?? '' ?>" placeholder="1234" required>
                             <div class="invalid-feedback">Por favor ingresa el número.</div>
                         </div>
-                        
+
                         <div class="col-md-3 mb-3">
                             <label for="piso" class="form-label">Piso/Depto</label>
-                            <input type="text" class="form-control" id="piso" placeholder="1° A">
+                            <input type="text" class="form-control" id="piso" name="piso" value="<?= $datos_formulario['piso'] ?? '' ?>" placeholder="1° A">
                         </div>
-                        
+
                         <div class="col-md-4 mb-3">
                             <label for="localidad" class="form-label">Localidad <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control" id="localidad" placeholder="Ciudad Autónoma de Buenos Aires" required>
+                            <input type="text" class="form-control" id="localidad" name="localidad" value="<?= $datos_formulario['localidad'] ?? '' ?>" placeholder="Ciudad Autónoma de Buenos Aires" required>
                             <div class="invalid-feedback">Por favor ingresa la localidad.</div>
                         </div>
-                        
+
                         <div class="col-md-4 mb-3">
                             <label for="provincia" class="form-label">Provincia <span class="text-danger">*</span></label>
-                            <select class="form-select" id="provincia" required>
+                            <select class="form-select" id="provincia" name="provincia" required>
                                 <option value="">Seleccionar provincia</option>
                                 <option value="CABA">Ciudad Autónoma de Buenos Aires</option>
                                 <option value="BA">Buenos Aires</option>
@@ -166,10 +183,10 @@ $current_page = "razon_social";
                             </select>
                             <div class="invalid-feedback">Por favor selecciona una provincia.</div>
                         </div>
-                        
+
                         <div class="col-md-4 mb-3">
                             <label for="codigoPostal" class="form-label">Código Postal</label>
-                            <input type="text" class="form-control" id="codigoPostal" placeholder="C1000ABC">
+                            <input type="text" class="form-control" id="codigoPostal" name="cod_postal" value="<?= $datos_formulario['cod_postal'] ?? '' ?>" placeholder="C1000ABC">
                         </div>
                     </div>
 
@@ -178,10 +195,10 @@ $current_page = "razon_social";
                         <div class="col-12">
                             <h6 class="border-bottom pb-2 mb-3">Observaciones</h6>
                         </div>
-                        
+
                         <div class="col-12 mb-3">
                             <label for="observaciones" class="form-label">Observaciones</label>
-                            <textarea class="form-control" id="observaciones" rows="3" placeholder="Notas adicionales..."></textarea>
+                            <textarea class="form-control" id="observaciones" name="observaciones" rows="3" placeholder="Notas adicionales..."><?= $datos_formulario['observaciones'] ?? '' ?></textarea>
                         </div>
                     </div>
 
@@ -190,7 +207,7 @@ $current_page = "razon_social";
                         <div class="col-12">
                             <h6 class="border-bottom pb-2 mb-3">Estado</h6>
                         </div>
-                        
+
                         <div class="col-md-6 mb-3">
                             <label for="estado" class="form-label">Estado <span class="text-danger">*</span></label>
                             <select class="form-select" id="estado" required>
@@ -209,7 +226,12 @@ $current_page = "razon_social";
                                     <i class="bi bi-arrow-clockwise"></i> Limpiar
                                 </button>
                                 <button type="submit" class="btn btn-primary">
-                                    <i class="bi bi-check-lg"></i> Guardar Razón Social
+                                    <i class="bi bi-check-lg"></i>
+                                    <?php if (isset($modo) && $modo === 'editar'): ?>
+                                        Actualizar Razón Social
+                                    <?php else: ?>
+                                        Guardar Razón Social
+                                    <?php endif; ?>
                                 </button>
                             </div>
                         </div>
@@ -250,33 +272,7 @@ $current_page = "razon_social";
         }
     });
 
-    // Validación del formulario
-    document.getElementById('razonSocialForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        
-        if (!this.checkValidity()) {
-            e.stopPropagation();
-            this.classList.add('was-validated');
-            return;
-        }
-        
-        // Simular envío exitoso
-        showAlert('Razón social guardada correctamente.', 'success');
-        this.classList.remove('was-validated');
-        
-        // Aquí iría la lógica real de envío al servidor
-        // const formData = new FormData(this);
-        // fetch('guardar_razon_social.php', { method: 'POST', body: formData })
-        //     .then(response => response.json())
-        //     .then(data => {
-        //         if (data.success) {
-        //             showAlert('Razón social guardada correctamente.', 'success');
-        //             resetForm();
-        //         } else {
-        //             showAlert('Error al guardar: ' + data.message, 'danger');
-        //         }
-        //     });
-    });
+    // Formulario ahora se envía normalmente sin JavaScript interceptándolo
 
     // Función para mostrar alertas
     function showAlert(message, type) {
@@ -288,7 +284,7 @@ $current_page = "razon_social";
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         `;
         alertContainer.appendChild(alert);
-        
+
         // Auto-remover después de 5 segundos
         setTimeout(() => {
             if (alert.parentNode) {
@@ -317,6 +313,11 @@ $current_page = "razon_social";
             }
         });
     });
+
+    // Seleccionar provincia en modo edición
+    <?php if (isset($datos_formulario['provincia']) && !empty($datos_formulario['provincia'])): ?>
+        document.getElementById('provincia').value = '<?= $datos_formulario['provincia'] ?>';
+    <?php endif; ?>
 </script>
 
 <?php include 'footer.php'; ?>
